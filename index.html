@@ -680,7 +680,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#F5F5FA;min-height:100vh
 //  BASE DE DATOS DEMO
 // ══════════════════════════════
 const USUARIOS = {
-  '42341463': { nombre:'HUANCCO ZARATE JUBER', codigo:'0', score:999, plan:'Premium',
+  '42341463': { nombre:'HANCCO ZARATE JUBER', codigo:'0', score:999, plan:'Premium',
     deuda:'S/ 0', entidades:3, calificacion:'Normal', nivel:'Excelente Puntaje', color:'#16A34A',
     dni:'42341463', fechaNac:'28/03/1978', entidadesDetalle:['BBVA','BCP','Interbank'] },
   '22222222': { nombre:'CARLOS MENDOZA QUISPE', codigo:'2', score:650, plan:'Estándar',
@@ -1207,6 +1207,17 @@ function descargarReportePropio() {
 
 const temp = document.createElement('div');
 temp.innerHTML = html;
+  const body = temp.querySelector('body');
+if(body){
+  body.style.margin = '0';
+  body.style.padding = '0';
+}
+
+const htmlTag = temp.querySelector('html');
+if(htmlTag){
+  htmlTag.style.margin = '0';
+  htmlTag.style.padding = '0';
+}
 
 temp.style.margin = '0';
 temp.style.padding = '0';
@@ -1317,7 +1328,13 @@ function descargarReporteTercero(doc) {
   const fecha = new Date().toLocaleDateString('es-PE', { day:'2-digit', month:'long', year:'numeric' });
   const solicitante = usuarioActual ? usuarioActual.nombre : 'Usuario';
   const html = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Reporte Tercero — ${p.nombre}</title>
-  <style>body{font-family:'Segoe UI',Arial,sans-serif;background:#fff;padding:40px;max-width:700px;margin:0 auto;color:#1F2937}
+  <style>body{
+  font-family:Arial,sans-serif;
+  background:#fff;
+  margin:0;
+  padding:0;
+  color:#111827
+}
   h1{color:#1A3FA8;font-size:20px;margin-bottom:4px}
   .sub{color:#6B7280;font-size:13px;margin-bottom:24px}
   .card{background:#F0F4FF;border:1px solid #C7D2FE;border-radius:10px;padding:20px;margin-bottom:16px}
