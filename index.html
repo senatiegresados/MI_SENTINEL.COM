@@ -917,6 +917,9 @@ function descargarReportePropio() {
   *{margin:0;padding:0;box-sizing:border-box}
   body{font-family:'Segoe UI',Arial,sans-serif;background:#fff;color:#1F2937;font-size:12px}
   .page{
+  position:absolute;
+  top:0;
+  left:0;
   max-width:780px;
   margin:0 auto;
   background:#fff;
@@ -1228,7 +1231,7 @@ if(page){
   page.style.paddingTop = '10px';
 }
 
-html2pdf().set(opt).from(temp).save();
+html2pdf().from(temp.querySelector('.page')).set(opt).save();
 showToast('✔ Reporte descargado correctamente');
  
 }
