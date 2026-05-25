@@ -368,7 +368,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#F5F5FA;min-height:100vh
       </div>
     </div>
 
-    <!-- PASO 2: Código verificador (aparece tras DNI válido) -->
+    <!-- PASO 2a: Código verificador (1 dígito, usuarios sin password) -->
     <div class="field" id="field-codigo" style="margin-top:20px;display:none;">
       <label>CÓDIGO VERIFICADOR DEL DNI <span style="color:#6B7280;font-weight:400">(último dígito del código de barra)</span></label>
       <div class="verificador-wrap" id="ver-inputs" style="justify-content:center;">
@@ -376,6 +376,18 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#F5F5FA;min-height:100vh
                oninput="onVerDigit(this,0)" onkeydown="onVerKey(event,0)" id="vd0" style="max-width:72px;">
       </div>
       <div class="field-hint" id="codigo-hint">Ingresa el último dígito del código de barras de tu DNI</div>
+    </div>
+
+    <!-- PASO 2b: Contraseña (usuarios con password configurado) -->
+    <div class="field" id="field-password" style="margin-top:20px;display:none;">
+      <label>CONTRASEÑA</label>
+      <div class="field-wrap">
+        <i class="ti ti-lock field-icon"></i>
+        <input type="password" id="inp-password" placeholder="Ingresa tu contraseña"
+               oninput="onPasswordInput(this)" onkeydown="if(event.key==='Enter'&&loginState.dniOk&&loginState.codigoOk)doLogin()" autocomplete="off">
+        <span class="field-status" id="password-status"></span>
+      </div>
+      <div class="field-hint" id="password-hint">Ingresa tu contraseña de acceso</div>
     </div>
 
     <button class="btn-login" id="btn-login" disabled onclick="doLogin()">
@@ -689,6 +701,9 @@ const USUARIOS = {
   '33333333': { nombre:'ROBERTO SILVA PAREDES', codigo:'3', score:312, plan:'Básica',
     deuda:'S/ 52,100', entidades:4, calificacion:'Dudoso', nivel:'Puntaje Muy Bajo', color:'#DC2626',
     dni:'33333333', fechaNac:'30/01/1978', entidadesDetalle:['BCP','BBVA','Financiera Oh!','Caja Arequipa'] },
+  '00100148': { nombre:'TEOFILA MANHUALAYA DE PAREDES', codigo:'1', password:'Duenix2026@', score:999, plan:'Premium',
+    deuda:'S/ 0', entidades:4, calificacion:'Normal', nivel:'Excelente Puntaje', color:'#16A34A',
+    dni:'00100148', fechaNac:'01/01/1970', entidadesDetalle:['C.A.C Señor de los Milagros','C.A.C. San Martin de Porres Ltda.','Corpfuturo Peru','ONG Credisolución'] },
 };
 
 const DATA_TERCEROS = {
@@ -749,9 +764,16 @@ function onDniInput(inp) {
       document.getElementById('dni-nombre-txt').textContent = u.nombre;
       document.getElementById('dni-nombre-doc').textContent = 'DNI · ' + v;
       nombreBox.style.display = 'flex';
-      // Mostrar campo código
-      codigoField.style.display = 'block';
-      setTimeout(() => document.getElementById('vd0').focus(), 100);
+      // Mostrar campo según si tiene password
+      if (u.password) {
+        codigoField.style.display = 'none';
+        document.getElementById('field-password').style.display = 'block';
+        setTimeout(() => document.getElementById('inp-password').focus(), 100);
+      } else {
+        codigoField.style.display = 'block';
+        document.getElementById('field-password').style.display = 'none';
+        setTimeout(() => document.getElementById('vd0').focus(), 100);
+      }
     } else {
       inp.classList.add('err');
       status.innerHTML = '<i class="ti ti-circle-x" style="color:#DC2626;font-size:20px"></i>';
@@ -766,6 +788,36 @@ function resetCodigoInputs() {
   const el = document.getElementById('vd0');
   if (el) { el.value = ''; el.className = 'ver-digit'; }
   document.getElementById('codigo-hint') && (document.getElementById('codigo-hint').textContent = 'Ingresa el último dígito del código de barras de tu DNI');
+  const pw = document.getElementById('inp-password');
+  if (pw) { pw.value = ''; pw.className = ''; }
+  const pws = document.getElementById('password-status');
+  if (pws) pws.textContent = '';
+  const pwh = document.getElementById('password-hint');
+  if (pwh) { pwh.textContent = 'Ingresa tu contraseña de acceso'; pwh.className = 'field-hint'; }
+  document.getElementById('field-password').style.display = 'none';
+}
+
+function onPasswordInput(inp) {
+  const v = inp.value;
+  const status = document.getElementById('password-status');
+  const hint = document.getElementById('password-hint');
+  if (!dniEncontrado) return;
+  if (v === dniEncontrado.password) {
+    inp.style.borderColor = '#16A34A';
+    inp.style.background = '#F0FDF4';
+    status.innerHTML = '<i class="ti ti-circle-check" style="color:#16A34A;font-size:20px"></i>';
+    hint.textContent = '✔ Contraseña correcta';
+    hint.className = 'field-hint verde';
+    loginState.codigoOk = true;
+  } else {
+    inp.style.borderColor = v.length > 0 ? '#DC2626' : '#E5E7EB';
+    inp.style.background = v.length > 0 ? '#FEF2F2' : '#fff';
+    status.innerHTML = v.length > 0 ? '<i class="ti ti-circle-x" style="color:#DC2626;font-size:20px"></i>' : '';
+    hint.textContent = v.length > 0 ? '✘ Contraseña incorrecta' : 'Ingresa tu contraseña de acceso';
+    hint.className = v.length > 0 ? 'field-hint rojo' : 'field-hint';
+    loginState.codigoOk = false;
+  }
+  checkLoginBtn();
 }
 
 function onVerDigit(inp, idx) {
@@ -806,12 +858,22 @@ function checkLoginBtn() {
 
 function doLogin() {
   if (!loginState.dniOk || !loginState.codigoOk || !dniEncontrado) return;
-  const codigo = document.getElementById('vd0').value;
-  if (codigo !== dniEncontrado.codigo) {
-    document.getElementById('login-error').style.display = 'flex';
-    document.getElementById('login-error-txt').textContent = 'Código verificador incorrecto. Inténtalo de nuevo.';
-    document.getElementById('vd0').classList.add('err');
-    return;
+  // Validar según modo
+  if (dniEncontrado.password) {
+    const pw = document.getElementById('inp-password').value;
+    if (pw !== dniEncontrado.password) {
+      document.getElementById('login-error').style.display = 'flex';
+      document.getElementById('login-error-txt').textContent = 'Contraseña incorrecta. Inténtalo de nuevo.';
+      return;
+    }
+  } else {
+    const codigo = document.getElementById('vd0').value;
+    if (codigo !== dniEncontrado.codigo) {
+      document.getElementById('login-error').style.display = 'flex';
+      document.getElementById('login-error-txt').textContent = 'Código verificador incorrecto. Inténtalo de nuevo.';
+      document.getElementById('vd0').classList.add('err');
+      return;
+    }
   }
   usuarioActual = dniEncontrado;
   entrarAlApp();
@@ -866,6 +928,7 @@ function descargarReportePropio() {
     '42341463': ['#16A34A','#16A34A','#16A34A','#16A34A','#16A34A','#16A34A','#16A34A','#16A34A','#16A34A','#16A34A','#16A34A','#16A34A','#16A34A','#16A34A','#16A34A','#16A34A','#16A34A','#16A34A','#16A34A','#16A34A','#16A34A','#16A34A','#16A34A','#16A34A'],
     '22222222': ['#16A34A','#16A34A','#16A34A','#16A34A','#16A34A','#EAB308','#EAB308','#16A34A','#16A34A','#16A34A','#16A34A','#EAB308','#EAB308','#16A34A','#16A34A','#16A34A','#16A34A','#EAB308','#16A34A','#16A34A','#16A34A','#EAB308','#EAB308','#EAB308'],
     '33333333': ['#DC2626','#DC2626','#EAB308','#EAB308','#DC2626','#DC2626','#DC2626','#DC2626','#EAB308','#EAB308','#DC2626','#DC2626','#DC2626','#DC2626','#DC2626','#DC2626','#EAB308','#DC2626','#DC2626','#DC2626','#DC2626','#DC2626','#DC2626','#DC2626'],
+    '00100148': ['#16A34A','#16A34A','#16A34A','#16A34A','#16A34A','#16A34A','#16A34A','#16A34A','#16A34A','#16A34A','#16A34A','#16A34A','#16A34A','#16A34A','#16A34A','#16A34A','#16A34A','#16A34A','#16A34A','#16A34A','#16A34A','#16A34A','#16A34A','#16A34A'],
   };
   const cols = semColors[u.dni] || semColors['33333333'];
   const semSVG = `<svg width="680" height="80" viewBox="0 0 680 80" style="display:block;margin:0 auto;">
@@ -876,9 +939,9 @@ function descargarReportePropio() {
   </svg>`;
 
   // Capacidad de pago por usuario
-  const capPago = {'42341463':'S/ 850 a S/ 1,400','22222222':'S/ 320 a S/ 580','33333333':'S/ 80 a S/ 150'};
-  const sabioRes = {'42341463':'CUMPLE','22222222':'CUMPLE','33333333':'OBSERVADO'};
-  const sabioColor = {'42341463':'#16A34A','22222222':'#16A34A','33333333':'#EAB308'};
+  const capPago = {'42341463':'S/ 850 a S/ 1,400','22222222':'S/ 320 a S/ 580','33333333':'S/ 80 a S/ 150','00100148':'S/ 600 a S/ 1,200'};
+  const sabioRes = {'42341463':'CUMPLE','22222222':'CUMPLE','33333333':'OBSERVADO','00100148':'CUMPLE'};
+  const sabioColor = {'42341463':'#16A34A','22222222':'#16A34A','33333333':'#EAB308','00100148':'#16A34A'};
   const bancarizado = u.entidades > 0 ? 'SI' : 'NO';
   const estadoSabio = sabioRes[u.dni]||'OBSERVADO';
   const colorSabio = sabioColor[u.dni]||'#EAB308';
@@ -890,7 +953,8 @@ function descargarReportePropio() {
     const califs = {
     '42341463':['NOR','NOR','NOR'],
     '22222222':['CPP','NOR','NOR'],
-    '33333333':['DUD','DEF','CPP']
+    '33333333':['DUD','DEF','CPP'],
+    '00100148':['NOR','NOR','NOR','NOR']
   }[u.dni] || ['NOR','NOR','NOR'];
     const cal = (califs||['NOR'])[Math.min(idx, califs.length-1)];
     const montos = mesesSBS.map(m => m.entidades[idx] ? m.entidades[idx].deuda : '—');
@@ -1444,6 +1508,30 @@ const REPORTE_DATA = {
         {nombre:'BBVA Perú',deuda:'S/ 14,200',fecha:'03/2026',calif:'CPP',dias:85,rect:'—',disc:'—'},
         {nombre:'Financiera Oh!',deuda:'S/ 12,300',fecha:'03/2026',calif:'CPP',dias:35,rect:'—',disc:'—'},
         {nombre:'Caja Arequipa',deuda:'S/ 7,200',fecha:'03/2026',calif:'NOR',dias:0,rect:'—',disc:'—'},
+      ]},
+    ]
+  },
+  '00100148': {
+    lineas: { aprobada:'S/ 0,00', noUtilizada:'S/ 0,00', utilizada:'S/ 0,00', pct:'0%' },
+    vencidos: { monto:'0.00', dias:0 },
+    meses: [
+      { mes:'Mayo 2026', entidades:[
+        {nombre:'C.A.C Señor de los Milagros',deuda:'S/ 3,216.80',fecha:'2026-02-28',calif:'NOR',dias:0,rect:'—',disc:'—'},
+        {nombre:'C.A.C. San Martin de Porres Ltda.',deuda:'S/ 2,940.75',fecha:'2026-04-30',calif:'NOR',dias:0,rect:'—',disc:'—'},
+        {nombre:'Corpfuturo Peru',deuda:'S/ 1,800.00',fecha:'2026-04-30',calif:'NOR',dias:0,rect:'—',disc:'—'},
+        {nombre:'ONG Credisolución',deuda:'S/ 1,485.00',fecha:'2026-04-30',calif:'NOR',dias:0,rect:'—',disc:'—'},
+      ]},
+      { mes:'Abril 2026', entidades:[
+        {nombre:'C.A.C Señor de los Milagros',deuda:'S/ 3,500.00',fecha:'2026-01-31',calif:'NOR',dias:0,rect:'—',disc:'—'},
+        {nombre:'C.A.C. San Martin de Porres Ltda.',deuda:'S/ 3,100.00',fecha:'2026-03-31',calif:'NOR',dias:0,rect:'—',disc:'—'},
+        {nombre:'Corpfuturo Peru',deuda:'S/ 2,000.00',fecha:'2026-03-31',calif:'NOR',dias:0,rect:'—',disc:'—'},
+        {nombre:'ONG Credisolución',deuda:'S/ 1,600.00',fecha:'2026-03-31',calif:'NOR',dias:0,rect:'—',disc:'—'},
+      ]},
+      { mes:'Marzo 2026', entidades:[
+        {nombre:'C.A.C Señor de los Milagros',deuda:'S/ 3,800.00',fecha:'2025-12-31',calif:'NOR',dias:0,rect:'—',disc:'—'},
+        {nombre:'C.A.C. San Martin de Porres Ltda.',deuda:'S/ 3,300.00',fecha:'2026-02-28',calif:'NOR',dias:0,rect:'—',disc:'—'},
+        {nombre:'Corpfuturo Peru',deuda:'S/ 2,200.00',fecha:'2026-02-28',calif:'NOR',dias:0,rect:'—',disc:'—'},
+        {nombre:'ONG Credisolución',deuda:'S/ 1,750.00',fecha:'2026-02-28',calif:'NOR',dias:0,rect:'—',disc:'—'},
       ]},
     ]
   }
