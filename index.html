@@ -705,8 +705,8 @@ const USUARIOS = {
     deuda:'S/ 0', entidades:4, calificacion:'Normal', nivel:'Excelente Puntaje', color:'#16A34A',
     dni:'00100148', fechaNac:'01/01/1970', entidadesDetalle:['C.A.C Señor de los Milagros','C.A.C. San Martin de Porres Ltda.','Corpfuturo Peru','ONG Credisolución'] },
    '10151794': { nombre:'CORONADO GODOY JUAN MOISES', codigo:'8', password:'JUAN27', score:899, plan:'Estándar',
-    deuda:'S/ 0', entidades:4, calificacion:'Normal', nivel:'Excelente Puntaje', color:'#16A34A',
-    dni:'00100148', fechaNac:'27/05/1976', entidadesDetalle:['CREDISCOTIA FINANC.'] },
+    deuda:'S/ 0', entidades:1, calificacion:'Normal', nivel:'Excelente Puntaje', color:'#16A34A',
+    dni:'10151794', fechaNac:'27/05/1976', entidadesDetalle:['CREDISCOTIA FINANC.'] },
 };
 
 const DATA_TERCEROS = {
@@ -942,9 +942,9 @@ function descargarReportePropio() {
   </svg>`;
 
   // Capacidad de pago por usuario
-  const capPago = {'42341463':'S/ 850 a S/ 1,400','22222222':'S/ 320 a S/ 580','33333333':'S/ 80 a S/ 150','00100148':'S/ 600 a S/ 1,200'};
-  const sabioRes = {'42341463':'CUMPLE','22222222':'CUMPLE','33333333':'OBSERVADO','00100148':'CUMPLE'};
-  const sabioColor = {'42341463':'#16A34A','22222222':'#16A34A','33333333':'#EAB308','00100148':'#16A34A'};
+  const capPago = {'42341463':'S/ 850 a S/ 1,400','22222222':'S/ 320 a S/ 580','33333333':'S/ 80 a S/ 150','00100148':'S/ 600 a S/ 1,200','10151794':'S/ 600 a S/ 1,200'};
+  const sabioRes = {'42341463':'CUMPLE','22222222':'CUMPLE','33333333':'OBSERVADO','00100148':'CUMPLE','00100148':'CUMPLE'};
+  const sabioColor = {'42341463':'#16A34A','22222222':'#16A34A','33333333':'#EAB308','10151794':'#16A34A'};
   const bancarizado = u.entidades > 0 ? 'SI' : 'NO';
   const estadoSabio = sabioRes[u.dni]||'OBSERVADO';
   const colorSabio = sabioColor[u.dni]||'#EAB308';
@@ -1467,6 +1467,21 @@ const REPORTE_DATA = {
         {nombre:'BBVA Perú',deuda:'S/ 28,400',fecha:'03/2026',calif:'NOR',dias:0,rect:'—',disc:'—'},
         {nombre:'Banco BCP',deuda:'S/ 32,100',fecha:'03/2026',calif:'NOR',dias:0,rect:'—',disc:'—'},
         {nombre:'Interbank',deuda:'S/ 25,800',fecha:'03/2026',calif:'NOR',dias:0,rect:'—',disc:'—'},
+      ]},
+    ]
+  },
+  '10151794': {
+    lineas: { aprobada:'S/ 20,052.09', noUtilizada:'S/ 0,00', utilizada:'S/ 20,052.09', pct:'100%' },
+    vencidos: { monto:'0.00', dias:0 },
+    meses: [
+      { mes:'Mayo 2026', entidades:[
+        {nombre:'CREDISCOTIA FINAN.',deuda:'S/0,00',fecha:'05/2026',calif:'NOR',dias:0,rect:'—',disc:'—'},
+      ]},
+      { mes:'Abril 2026', entidades:[
+        {nombre:'CREDISCOTIA FINAN.',deuda:'S/0,00',fecha:'04/2026',calif:'NOR',dias:0,rect:'—',disc:'—'},
+      ]},
+      { mes:'Marzo 2026', entidades:[
+        {nombre:'CREDISCOTIA FINAN.',deuda:'S/ 0,00',fecha:'03/2026',calif:'NOR',dias:0,rect:'—',disc:'—'},
       ]},
     ]
   },
